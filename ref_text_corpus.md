@@ -1,6 +1,6 @@
 # 音源収録のためのテキストコーパス
 
-[https://github.com/mmorise/ita-corpus/blob/main/recitation_transcript_ruby_utf8.txt](ITAコーパス)
+[ITAコーパス](https://github.com/mmorise/ita-corpus/blob/main/recitation_transcript_ruby_utf8.txt)
 を用いる．
 
 ## 収録する方へ
