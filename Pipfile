@@ -10,6 +10,7 @@ name = "pytorch_cpu"
 
 [packages]
 torch = {version = "*", index = "pytorch_cpu"}
+numpy = "*"
 
 [dev-packages]
 isort = "*"
