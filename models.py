@@ -7,6 +7,8 @@ import torch.nn
 # - 音声の時間は 10 sec = 160_000 frames
 # - 1チャンネルモノラル
 N_FRAMES = 160_000
+# 片側化 FFT 後の要素数
+N_RFFT = 80_001
 # 声質特徴量の次元
 N_DIM_VOICE_QUAL = 200
 # 言語情報特徴量の次元
@@ -19,8 +21,8 @@ class VoiceQualAutoEncoder(torch.nn.Module):
     def __init__(self) -> None:
         super().__init__()
 
-        self.encode = torch.nn.Linear(N_FRAMES, N_DIM_VOICE_QUAL)
-        self.decode = torch.nn.Linear(N_DIM_VOICE_QUAL, N_FRAMES)
+        self.encode = torch.nn.Linear(N_RFFT, N_DIM_VOICE_QUAL)
+        self.decode = torch.nn.Linear(N_DIM_VOICE_QUAL, N_RFFT)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.encode(x)
