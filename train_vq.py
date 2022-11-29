@@ -58,10 +58,13 @@ def main(*, persons: List[str]):
     }
 
     print("**** make dataset")
+    n_classes = len(powerspecs)
     dataset_input = numpy.vstack(list(powerspecs.values()))
-    indices = numpy.arange(len(dataset_input))
-    numpy.random.shuffle(indices)
-    dataset_output = dataset_input[indices]
+    dataset_output = numpy.repeat(
+        numpy.identity(n_classes, dtype=numpy.float32),
+        list(map(len, powerspecs.values())),
+        axis=0,
+    )
 
     dataset_input = torch.tensor(dataset_input, dtype=torch.float32)
     dataset_output = torch.tensor(dataset_output, dtype=torch.float32)
@@ -77,8 +80,8 @@ def main(*, persons: List[str]):
     test_dataloader = torch.utils.data.DataLoader(test_dataset, shuffle=False)
 
     print("**** train")
-    model = models.VoiceQualAutoEncoder()
-    loss_fn = torch.nn.MSELoss()
+    model = models.VoiceQualEncoder(n_classes=len(persons))
+    loss_fn = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=0.001)
     epochs = 10
     for t in range(epochs):

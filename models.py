@@ -17,19 +17,20 @@ N_DIM_LANGUAGE = 1_600
 N_KERNEL_SIZE_FIR = 801
 
 
-class VoiceQualAutoEncoder(torch.nn.Module):
-    def __init__(self) -> None:
+class VoiceQualEncoder(torch.nn.Module):
+    def __init__(self, n_classes) -> None:
         super().__init__()
 
-        self.relu = torch.nn.ReLU()
+        self.n_classes = n_classes
+
+        self._relu = torch.nn.ReLU()
 
         self.encode = torch.nn.Linear(N_RFFT, N_DIM_VOICE_QUAL)
-        self.decode = torch.nn.Linear(N_DIM_VOICE_QUAL, N_RFFT)
+        self._classify = torch.nn.Linear(N_DIM_VOICE_QUAL, n_classes)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.encode(x)
-        x = self.relu(x)
-        x = self.decode(x)
+        x = self._classify(x)
         return x
 
 
