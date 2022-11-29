@@ -7,7 +7,6 @@ def load_waveforms(dirname: str):
     result = np.zeros((100, 160_000), np.float32)
     for i in range(100):
         path = f"{dirname}/{i+1:03d}.wav"
-        print(path)
         with wave.open(path, "rb") as fw:
             nframes = fw.getnframes()
             signal = (
