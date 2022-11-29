@@ -34,13 +34,22 @@ def test_loop(dataloader, model, loss_fn):
     model.eval()
     num_batches = len(dataloader)
     test_loss = 0
+    test_loss_max = 0
 
     for x, y in dataloader:
         pred = model(x)
-        test_loss += loss_fn(pred, y).item()
+        current_loss = loss_fn(pred, y).item()
+        test_loss += current_loss
+        test_loss_max = max(test_loss_max, current_loss)
 
     test_loss /= num_batches
-    print(f"Test Error: \n Avg loss: {test_loss:>8f} \n")
+    print(
+        "Test Error:",
+        f"\tAvg loss: {test_loss:>8f}",
+        f"\tMax loss: {test_loss_max:>8f}",
+        sep="\n",
+        end="\n\n",
+    )
 
 
 def main(*, persons: List[str]):
