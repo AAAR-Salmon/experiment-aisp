@@ -71,7 +71,9 @@ def main(*, persons: List[str]):
     train_dataset, test_dataset = torch.utils.data.random_split(
         dataset, lengths=[train_dataset_length, test_dataset_length]
     )
-    train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=4, shuffle=True)
+    train_dataloader = torch.utils.data.DataLoader(
+        train_dataset, batch_size=4, shuffle=True
+    )
     test_dataloader = torch.utils.data.DataLoader(test_dataset, shuffle=False)
 
     print("**** train")
