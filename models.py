@@ -21,11 +21,14 @@ class VoiceQualAutoEncoder(torch.nn.Module):
     def __init__(self) -> None:
         super().__init__()
 
+        self.relu = torch.nn.ReLU()
+
         self.encode = torch.nn.Linear(N_RFFT, N_DIM_VOICE_QUAL)
         self.decode = torch.nn.Linear(N_DIM_VOICE_QUAL, N_RFFT)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.encode(x)
+        x = self.relu(x)
         x = self.decode(x)
         return x
 
