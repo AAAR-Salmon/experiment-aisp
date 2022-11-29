@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import json
+import pickle
 from typing import List
 
 import numpy
@@ -97,6 +98,18 @@ def main(*, persons: List[str]):
         print(f"== epoch {t} =========")
         train_loop(train_dataloader, model, loss_fn, optimizer)
         test_loop(test_dataloader, model, loss_fn)
+
+    print("**** extract feature and dump")
+    model.eval()
+    for person, powerspecs_of_person in powerspecs.items():
+        powerspecs_of_person = torch.tensor(
+            powerspecs_of_person, dtype=torch.float32
+        )
+        feature_vq = numpy.average(
+            model.encode(powerspecs_of_person).detach().numpy(), axis=0
+        )
+        with open(f"{person}.np_fvq.pickle", "wb") as fp:
+            pickle.dump(feature_vq, fp)
 
 
 if __name__ == "__main__":
