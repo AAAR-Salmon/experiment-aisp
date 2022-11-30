@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
+import datetime
 import json
-from typing import List
 import pickle
+from typing import List
 
 import numpy
 import numpy.fft
@@ -65,19 +66,13 @@ def main(*, persons: List[str]):
     dataset_output = torch.tensor(
         numpy.array(dataset_output, dtype=numpy.float32), dtype=torch.float32
     )
-    dataset = torch.utils.data.TensorDataset(
-        dataset_input_waveform, dataset_input_voicequal, dataset_output
-    )
 
-    train_dataset_length = int(0.8 * len(dataset))
-    test_dataset_length = len(dataset) - train_dataset_length
-    train_dataset, test_dataset = torch.utils.data.random_split(
-        dataset, lengths=[train_dataset_length, test_dataset_length]
+    train_dataset = torch.utils.data.TensorDataset(
+        dataset_input_waveform, dataset_input_voicequal, dataset_output
     )
     train_dataloader = torch.utils.data.DataLoader(
         train_dataset, batch_size=4, shuffle=True
     )
-    test_dataloader = torch.utils.data.DataLoader(test_dataset, shuffle=False)
 
     print("**** train")
     model = models.VoiceSynthesizer()
@@ -87,6 +82,8 @@ def main(*, persons: List[str]):
     for t in range(epochs):
         print(f"== epoch {t} =========")
         train_loop(train_dataloader, model, loss_fn, optimizer)
+        timestamp = datetime.datetime.utcnow().timestamp()
+        torch.save(model.state_dict(), f"synth_state_dict-{timestamp}.pickle")
 
 
 if __name__ == "__main__":

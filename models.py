@@ -11,8 +11,6 @@ N_FRAMES = 160_000
 N_RFFT = 80_001
 # 声質特徴量の次元
 N_DIM_VOICE_QUAL = 200
-# 合成後 FIR フィルタ（ただし因果的でない）の次数
-N_KERNEL_SIZE_FIR = 801
 # 合成の中間層の次元
 N_DIM_HIDDEN_SYNTH = 1_600
 
@@ -46,9 +44,6 @@ class VoiceSynthesizer(torch.nn.Module):
         self.synthesize2 = torch.nn.Linear(
             N_DIM_HIDDEN_SYNTH, N_FRAMES
         )
-        self.fir_filter = torch.nn.Conv1d(
-            1, 1, N_KERNEL_SIZE_FIR, bias=False
-        )
 
     def forward(self, waveforms: torch.Tensor, vq: torch.Tensor) -> torch.Tensor:
         x = torch.concat([waveforms, vq], dim=1)
@@ -57,7 +52,4 @@ class VoiceSynthesizer(torch.nn.Module):
         x = self.synthesize2(x)
         x = self._sigmoid(x)
         x = (x - 0.5) * 2  # transform value range (0, 1) -> (-1, 1)
-        x = torch.concat([torch.zeros((x.shape[0], 800), dtype=x.dtype), x], dim=1)
-        x = x.reshape(-1, 1, N_FRAMES + 800)
-        x = self.fir_filter(x)
         return x
