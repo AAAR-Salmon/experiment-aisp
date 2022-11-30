@@ -1,3 +1,4 @@
 *.wav
 config.json
 *.np_fvq.pickle
+__pycache__/
