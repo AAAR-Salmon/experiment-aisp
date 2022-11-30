@@ -70,15 +70,14 @@ def main(*, persons: List[str]):
     print("**** make dataset")
     n_classes = len(powerspecs)
     dataset_input = numpy.vstack(list(powerspecs.values()))
-    dataset_output = numpy.repeat(
-        numpy.identity(n_classes, dtype=numpy.float32),
+    dataset_label = numpy.repeat(
+        numpy.arange(n_classes, dtype=numpy.int64),
         list(map(len, powerspecs.values())),
-        axis=0,
     )
 
     dataset_input = torch.tensor(dataset_input, dtype=torch.float32)
-    dataset_output = torch.tensor(dataset_output, dtype=torch.float32)
-    dataset = torch.utils.data.TensorDataset(dataset_input, dataset_output)
+    dataset_label = torch.tensor(dataset_label, dtype=torch.long)
+    dataset = torch.utils.data.TensorDataset(dataset_input, dataset_label)
     train_dataset_length = int(0.8 * len(dataset))
     test_dataset_length = len(dataset) - train_dataset_length
     train_dataset, test_dataset = torch.utils.data.random_split(
