@@ -11,10 +11,10 @@ N_FRAMES = 160_000
 N_RFFT = 80_001
 # 声質特徴量の次元
 N_DIM_VOICE_QUAL = 200
-# 言語情報特徴量の次元
-N_DIM_LANGUAGE = 1_600
 # 合成後 FIR フィルタ（ただし因果的でない）の次数
 N_KERNEL_SIZE_FIR = 801
+# 合成の中間層の次元
+N_DIM_HIDDEN_SYNTH = 1_600
 
 
 class VoiceQualEncoder(torch.nn.Module):
@@ -34,32 +34,30 @@ class VoiceQualEncoder(torch.nn.Module):
         return x
 
 
-class LanguageAutoEncoder(torch.nn.Module):
-    def __init__(self) -> None:
-        super().__init__()
-
-        self.encode = torch.nn.Linear(N_FRAMES, N_DIM_LANGUAGE)
-        self.decode = torch.nn.Linear(N_DIM_LANGUAGE, N_FRAMES)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = self.encode(x)
-        x = self.decode(x)
-        return x
-
-
 class VoiceSynthesizer(torch.nn.Module):
     def __init__(self) -> None:
         super().__init__()
+        self._relu = torch.nn.ReLU()
+        self._sigmoid = torch.nn.Sigmoid()
 
-        self.synthesize = torch.nn.Linear(
-            N_DIM_VOICE_QUAL + N_DIM_LANGUAGE, N_FRAMES
+        self.synthesize1 = torch.nn.Linear(
+            N_DIM_VOICE_QUAL + N_FRAMES, N_DIM_HIDDEN_SYNTH
+        )
+        self.synthesize2 = torch.nn.Linear(
+            N_DIM_HIDDEN_SYNTH, N_FRAMES
         )
         self.fir_filter = torch.nn.Conv1d(
-            1, 1, N_KERNEL_SIZE_FIR, bias=False, padding="zero"
+            1, 1, N_KERNEL_SIZE_FIR, bias=False
         )
 
-    def forward(self, vq: torch.Tensor, lang: torch.Tensor) -> torch.Tensor:
-        x = torch.concat([vq, lang])
-        x = self.synthesize(x)
+    def forward(self, waveforms: torch.Tensor, vq: torch.Tensor) -> torch.Tensor:
+        x = torch.concat([waveforms, vq], dim=1)
+        x = self.synthesize1(x)
+        x = self._relu(x)
+        x = self.synthesize2(x)
+        x = self._sigmoid(x)
+        x = (x - 0.5) * 2  # transform value range (0, 1) -> (-1, 1)
+        x = torch.concat([torch.zeros((x.shape[0], 800), dtype=x.dtype), x], dim=1)
+        x = x.reshape(-1, 1, N_FRAMES + 800)
         x = self.fir_filter(x)
         return x
